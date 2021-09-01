@@ -160,16 +160,6 @@
 			]
 		},
 		{
-			"name": "unsubscribeCallback",
-			"inputs": [
-				{"name":"user","type":"address"},
-				{"name":"pubkey","type":"uint256"},
-				{"name":"isDeactivateAutoRenew","type":"bool"}
-			],
-			"outputs": [
-			]
-		},
-		{
 			"name": "buildUnsubscribePayload",
 			"inputs": [
 				{"name":"user","type":"address"},
@@ -180,14 +170,39 @@
 			]
 		},
 		{
+			"name": "unsubscribeCallback",
+			"inputs": [
+				{"name":"sender","type":"address"},
+				{"name":"user","type":"address"},
+				{"name":"pubkey","type":"uint256"},
+				{"name":"isDeactivateAutoRenew","type":"bool"}
+			],
+			"outputs": [
+			]
+		},
+		{
 			"name": "getUserSubscription",
 			"inputs": [
+				{"name":"_answer_id","type":"uint32"},
 				{"name":"user","type":"address"},
 				{"name":"pubkey","type":"uint256"},
 				{"name":"root","type":"address"}
 			],
 			"outputs": [
 				{"name":"value0","type":"address"}
+			]
+		},
+		{
+			"name": "getUserSubscriptionWithPayload",
+			"inputs": [
+				{"name":"_answer_id","type":"uint32"},
+				{"name":"user","type":"address"},
+				{"name":"pubkey","type":"uint256"},
+				{"name":"payload","type":"cell"}
+			],
+			"outputs": [
+				{"name":"value0","type":"address"},
+				{"name":"value1","type":"cell"}
 			]
 		}
 	],
@@ -198,5 +213,27 @@
 		{"key":4,"name":"_service","type":"address"}
 	],
 	"events": [
+		{
+			"name": "Subscripted",
+			"inputs": [
+				{"name":"sender","type":"address"},
+				{"name":"user","type":"address"},
+				{"name":"pubkey","type":"uint256"},
+				{"name":"userSubscription","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "Unsubscripted",
+			"inputs": [
+				{"name":"sender","type":"address"},
+				{"name":"user","type":"address"},
+				{"name":"pubkey","type":"uint256"},
+				{"name":"userSubscription","type":"address"}
+			],
+			"outputs": [
+			]
+		}
 	]
 }

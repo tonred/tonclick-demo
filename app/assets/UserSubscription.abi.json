@@ -31,6 +31,7 @@
 		{
 			"name": "isAutoRenew",
 			"inputs": [
+				{"name":"_answer_id","type":"uint32"}
 			],
 			"outputs": [
 				{"name":"value0","type":"bool"}
@@ -39,6 +40,7 @@
 		{
 			"name": "isActive",
 			"inputs": [
+				{"name":"_answer_id","type":"uint32"}
 			],
 			"outputs": [
 				{"name":"value0","type":"bool"}
@@ -47,6 +49,7 @@
 		{
 			"name": "getFinishTime",
 			"inputs": [
+				{"name":"_answer_id","type":"uint32"}
 			],
 			"outputs": [
 				{"name":"value0","type":"uint32"}
@@ -65,6 +68,7 @@
 		{
 			"name": "cancel",
 			"inputs": [
+				{"name":"sender","type":"address"}
 			],
 			"outputs": [
 			]

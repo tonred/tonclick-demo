@@ -96,11 +96,12 @@ async def check_user_subscription(pubkey: str) -> typing.Optional[typing.Tuple[s
             result = await run_local('getUserSubscription', {
                 'user': zero,
                 'pubkey': pubkey,
-                'root': sub_plan
+                'root': sub_plan,
+                '_answer_id': 0
             }, sub_plan, SUBSCRIPTION_PLAN_ABI, True)
             if result:
                 user = result.value['value0']
-                finish_time = await run_local('getFinishTime', {}, user, USER_SUBSCRIPTION_ABI, False)
+                finish_time = await run_local('getFinishTime', {'_answer_id': 0}, user, USER_SUBSCRIPTION_ABI, False)
                 if finish_time:
                     return sub_plan, int(finish_time.value['value0'])
     except Exception as e:
