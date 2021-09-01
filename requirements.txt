@@ -1,0 +1,6 @@
+ton-client-py
+fastapi
+uvicorn[standard]
+python-jose[cryptography]
+aiofiles
+httpx

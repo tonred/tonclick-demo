@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TonClick Demo Service</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16x16.png">
+  <link rel="manifest" href="/static/icons/site.webmanifest">
+  <script src="/static/qrcode.min.js"></script>
+</head>
+<body>
+<nav class="navbar">
+
+  <div class="container">
+    <div id="navMenu" class="navbar-menu">
+      <div class="navbar-start">
+        <a class="navbar-item">
+          <div class="navbar-brand" style="padding-top: 10px; padding-right: 5px">
+            <img src="/static/icons/apple-touch-icon.png">
+          </div>
+          TonClick
+        </a>
+      </div>
+
+      <div class="navbar-end">
+        <div class="navbar-item">
+          <a class="navbar-item" href="https://github.com/tonred/tonclick-demo">Demo GitHub</a>
+          <a class="navbar-item" href="https://github.com/tonred/tonclick">Project GitHub</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<section class="section">
+  <div class="columns is-full is-centered" style="padding-top: 30px; padding-bottom: 30px" id="emptyLogin">
+    <div class="buttons">
+      <button class="button is-link" onclick="showLogin()">Login with Surf</button>
+    </div>
+  </div>
+  <div class="columns is-full is-centered" style="padding-top: 30px; padding-bottom: 30px" id="plans">
+  </div>
+  <div class="columns is-full is-centered" style="padding-top: 30px; padding-bottom: 30px;display: none"
+       id="planCodeEl">
+    <div class="content is-half is-centered">
+      <h1>Subscribe with Surf DeBot</h1>
+      <p></p>
+      <h2>Open DeBot</h2>
+      <p>Scan QR code is Surf to open TonClick User Debot</p>
+      <div class="columns is-centered">
+        <figure id="debotCodePlan" class="is-centered">
+          <figcaption>
+            QRCode: Debot address
+          </figcaption>
+        </figure>
+      </div>
+      <h2>Scan Subscription address</h2>
+      <p>In DeBot select <b><i>Subscribe</i></b> option and then <b><i>Scan QR Code</i></b></p>
+      <div class="columns is-centered">
+        <figure id="planCode">
+        </figure>
+      </div>
+    </div>
+
+  </div>
+  <div class="columns is-half is-centered" style="display: none" id="loginGuide">
+    <div class="content is-half is-centered">
+      <h1>Login with Surf DeBot</h1>
+      <p></p>
+      <h2>Open DeBot</h2>
+      <p>Scan QR code is Surf to open TonClick User Debot</p>
+      <div class="columns is-centered">
+        <figure id="debotCode" class="is-centered">
+          <figcaption>
+            QRCode: Debot address
+          </figcaption>
+        </figure>
+      </div>
+
+      <h2>Scan login code</h2>
+      <p>In DeBot select <b><i>Login to site</i></b> option and then <b><i>Scan QR Code</i></b></p>
+      <div class="columns is-centered">
+        <figure id="loginCode">
+          <figcaption id="timer"></figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+  <div class="columns is-full is-centered" id="loggedIn" style="display: none">
+    <div class="content is-medium is-centered">
+      <b>Logged In as:</b><br>
+      <i id="user_key">value</i><br>
+      <b>Subscription active until:</b><br>
+      <i id="user_expires_at">value</i>
+      <div class="buttons is-centered">
+        <button class="button is-link" onclick="showCat()">CATS?!</button>
+        <button class="button is-link" onclick="logout()">Logout</button>
+      </div>
+      <div class="content is-centered">
+        <figure class="is-centered">
+          <img id="cats" alt="Cats!"></img>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+  let ws;
+  let debot;
+
+  function getCookie(name) {
+    let matches = document.cookie.match(new RegExp(
+      "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+    ));
+    return matches ? decodeURIComponent(matches[1]) : undefined;
+  }
+
+  function setCookie(name, value, options = {}) {
+
+    options = {
+      path: '/',
+      // при необходимости добавьте другие значения по умолчанию
+      ...options
+    };
+
+    if (options.expires instanceof Date) {
+      options.expires = options.expires.toUTCString();
+    }
+
+    let updatedCookie = encodeURIComponent(name) + "=" + encodeURIComponent(value);
+
+    for (let optionKey in options) {
+      updatedCookie += "; " + optionKey;
+      let optionValue = options[optionKey];
+      if (optionValue !== true) {
+        updatedCookie += "=" + optionValue;
+      }
+    }
+    document.cookie = updatedCookie;
+  }
+
+  function deleteCookie(name) {
+    setCookie(name, "", {
+      'max-age': -1
+    })
+  }
+
+  function showCat() {
+    fetch('/cats/', {
+      headers: {
+        'Authorization': 'Bearer ' + getCookie('token'),
+      },
+      credentials: 'omit'
+    })
+      .then((response) => {
+        return response.blob();
+      })
+      .then((data) => {
+        document.getElementById("cats").src = URL.createObjectURL(data);
+      });
+  }
+
+  function showLogin() {
+    document.getElementById("loginGuide").style = "display: visible";
+    document.getElementById("planCodeEl").style = "display: none";
+  }
+
+  function onLogin(data) {
+    if (!getCookie('token')) {
+      setCookie('token', data, {secure: true, 'max-age': 3600 * 24});
+    }
+    document.getElementById("loginGuide").style = "display: none";
+    document.getElementById("emptyLogin").style = "display: none";
+    fetch('/me/', {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getCookie('token'),
+      },
+    })
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        document.getElementById("loggedIn").style = "display: visible";
+        document.getElementById("user_key").innerText = data.key;
+        document.getElementById("user_expires_at").innerText = new Date(data.sub_exp * 1000).toLocaleDateString("en-US");
+        showCat();
+      });
+  }
+
+  function logout() {
+    deleteCookie('token');
+    document.location.reload();
+  }
+
+  function showPlan(address) {
+    document.getElementById("loginGuide").style = "display: none";
+    document.getElementById("planCodeEl").style = "display: visible";
+    document.getElementById("planCode").innerHTML = "";
+    new QRCode(document.getElementById("planCode"), address);
+  }
+
+  function onCidReceive(data) {
+    const qrcode = document.getElementById("loginCode");
+    qrcode.innerHTML = '<figcaption id="timer"></figcaption>'
+    new QRCode(qrcode, window.location.host + data);
+    const end = new Date(new Date().getTime() + 5 * 60000);
+    const x = setInterval(function () {
+      const now = new Date();
+      const distance = end - now;
+
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById("timer").innerHTML = minutes + ":" + seconds;
+      if (distance < 0) {
+        clearInterval(x);
+        if (!getCookie('token')) {
+          ws.send('refresh');
+          document.getElementById("timer").innerHTML = "EXPIRED";
+        }
+      }
+    }, 1000);
+  }
+
+  if (!getCookie('token')) {
+    if (location.protocol !== "https:") {
+      ws = new WebSocket('ws://' + window.location.host + '/ws/');
+    } else {
+      ws = new WebSocket('wss://' + window.location.host + '/ws/');
+    }
+    //
+    ws.onmessage = function (event) {
+      const content = document.createTextNode(event.data);
+      if (content.data.startsWith('login')) {
+        onCidReceive(content.data.split('|')[1]);
+      } else if (content.data.startsWith('access_token')) {
+        onLogin(content.data.split('|')[1]);
+      }
+    };
+  } else {
+    onLogin();
+  }
+  fetch('/debot/', {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((response) => {
+      return response.json();
+    })
+    .then((data) => {
+      debot = data.debot;
+      new QRCode(document.getElementById("debotCode"), `ton://debot/${debot}?net=devnet`);
+      new QRCode(document.getElementById("debotCodePlan"), `ton://debot/${debot}?net=devnet`);
+    });
+  fetch('/plans/', {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((response) => {
+      return response.json();
+    })
+    .then((data) => {
+      for (let plan of data.plans) {
+        document.getElementById("plans").innerHTML += `
+          <div class="box" style="height: 130px; margin-right: 10px; cursor: pointer" onclick="showPlan('${plan.address}')">
+            <article class="media">
+              <div class="media-content">
+                <div class="content">
+                  <p>
+                    <strong>${plan.name}</strong> <small>#${plan.id}</small>
+                    <br>
+                    Duration: <strong>${plan.duration}</strong>
+                    <br>
+                    Price: <strong>${plan.ton_price} TON</strong><small> or ${plan.prices} other currencies</small>
+                    <br>
+                    <small>${plan.address.replace('x', ':')}</small>
+                  </p>
+                </div>
+              </div>
+            </article>
+          </div>
+          `;
+
+      }
+    });
+</script>
+</body>
+</html>
